@@ -29,7 +29,7 @@ export default function Register() {
   const [formData, setFormData] = useState({
     fullName: '',
     mobileNumber: '',
-    emailAddress: user?.email || '',
+    emailAddress: '',
     fullAddress: '',
     gender: '',
     stravaProfileLink: '',
@@ -45,6 +45,16 @@ export default function Register() {
   const [success, setSuccess] = useState(false)
   const [existingRegistration, setExistingRegistration] = useState<ExistingRegistration | null>(null)
   const [checkingRegistration, setCheckingRegistration] = useState(true)
+
+  // Update email when user loads
+  useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({
+        ...prev,
+        emailAddress: user.email || ''
+      }))
+    }
+  }, [user?.email])
 
   // Check if user has already registered
   useEffect(() => {
@@ -158,7 +168,7 @@ export default function Register() {
 
     try {
       // Validate required fields based on payment tier
-      const requiredFields = ['fullName', 'mobileNumber', 'emailAddress', 'fullAddress', 'gender', 'stravaProfileLink', 'whereHeard', 'paymentTier']
+      const requiredFields = ['fullName', 'mobileNumber', 'fullAddress', 'gender', 'stravaProfileLink', 'whereHeard', 'paymentTier']
       
       if (formData.paymentTier === 'plus' || formData.paymentTier === 'premium') {
         requiredFields.push('deliveryAddress')
@@ -168,10 +178,24 @@ export default function Register() {
         requiredFields.push('tshirtSize')
       }
       
+      // Field name mapping for better error messages
+      const fieldLabels: { [key: string]: string } = {
+        fullName: 'Full Name',
+        mobileNumber: 'Mobile Number',
+        fullAddress: 'Full Address',
+        gender: 'Gender',
+        stravaProfileLink: 'Strava Profile Link',
+        whereHeard: 'Where did you hear about us',
+        paymentTier: 'Payment Package',
+        deliveryAddress: 'Delivery Address',
+        tshirtSize: 'T-shirt Size'
+      }
+      
       const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData])
       
       if (missingFields.length > 0) {
-        setError('Please fill in all required fields for your selected package')
+        const missingFieldNames = missingFields.map(field => fieldLabels[field] || field).join(', ')
+        setError(`Please fill in the following required fields: ${missingFieldNames}`)
         setLoading(false)
         return
       }
@@ -198,8 +222,8 @@ export default function Register() {
         p_full_address: formData.fullAddress,
         p_gender: formData.gender,
         p_strava_profile_link: formData.stravaProfileLink,
-        p_tshirt_size: formData.paymentTier === 'premium' ? formData.tshirtSize : '',
-        p_delivery_address: (formData.paymentTier === 'plus' || formData.paymentTier === 'premium') ? formData.deliveryAddress : '',
+        p_tshirt_size: formData.paymentTier === 'premium' ? formData.tshirtSize : null,
+        p_delivery_address: (formData.paymentTier === 'plus' || formData.paymentTier === 'premium') ? formData.deliveryAddress : null,
         p_payment_screenshot_url: uploadResult.url,
         p_payment_screenshot_name: uploadResult.fileName,
         p_where_heard: formData.whereHeard,
@@ -466,6 +490,17 @@ export default function Register() {
         </div>
       </header>
 
+      {/* Registration Deadline Notice */}
+      <div className="bg-accent-orange/20 border border-accent-orange/50 text-white p-4 mx-6 mt-6 rounded-lg">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
+          <span className="text-2xl">⏰</span>
+          <div>
+            <p className="font-semibold">Registration Deadline: 14th August 2025</p>
+            <p className="text-sm text-gray-300">Don&apos;t miss out! Register before the deadline to participate in the challenge.</p>
+          </div>
+        </div>
+      </div>
+
       {/* Form */}
       <main className="max-w-4xl mx-auto p-6">
         <div className="card">
@@ -624,10 +659,10 @@ export default function Register() {
                   id="emailAddress"
                   name="emailAddress"
                   required
-                  value={formData.emailAddress}
+                  value={formData.emailAddress || user?.email || ''}
                   onChange={handleInputChange}
-                  className="form-field w-full bg-gray-700 text-gray-400 cursor-not-allowed"
-                  placeholder="Enter your email address"
+                  className="form-field w-full bg-gray-700 text-white cursor-not-allowed"
+                  placeholder={user?.email ? user.email : "Loading your email..."}
                   disabled={true}
                   title="Email is automatically set from your account"
                 />

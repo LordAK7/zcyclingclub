@@ -23,6 +23,11 @@ export const config = {
   // App Configuration
   appName: process.env.NEXT_PUBLIC_APP_NAME || 'Someshwar Cycling Club',
   challengeName: process.env.NEXT_PUBLIC_CHALLENGE_NAME || 'Virtual Cycling Challenge',
+  
+  // Important Dates
+  registrationDeadline: '14th August 2025',
+  challengeStartDate: '15th August 2025',
+  challengeEndDate: '4th September 2025',
 } as const
 
 // Helper function to get price by tier

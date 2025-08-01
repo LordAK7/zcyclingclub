@@ -205,6 +205,10 @@ function Dashboard() {
             </h3>
             <div className="space-y-4 text-gray-300">
               <div className="flex items-start gap-3">
+                <span className="font-semibold text-accent-orange min-w-[140px]">Registration Deadline:</span>
+                <span className="text-white font-semibold">14th August 2025</span>
+              </div>
+              <div className="flex items-start gap-3">
                 <span className="font-semibold text-white min-w-[140px]">Challenge Dates:</span>
                 <span>15/8/2025 to 4/9/2025</span>
               </div>
