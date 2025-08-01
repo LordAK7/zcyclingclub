@@ -121,7 +121,7 @@ function SignInPrompt() {
 
 function Dashboard() {
   const { user, signOut } = useAuth()
-  const [userProfile, setUserProfile] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null)
 
   const handleSignOut = async () => {
     await signOut()
@@ -137,7 +137,7 @@ function Dashboard() {
         if (data && data.length > 0) {
           setUserProfile(data[0])
         }
-      } catch (error) {
+      } catch {
         // Silent error handling
       }
     }
@@ -193,7 +193,7 @@ function Dashboard() {
           </h2>
           <p className="text-gray-300 text-lg leading-relaxed">
             Join cyclists from across the country this Shravan month and ride towards fitness and fun.
-            The Shravan Cycling Challenge is a fitness and spiritual event focused on cycling during the auspicious month of Shravan, often associated with Lord Shiva and religious observances. It combines physical activity with the cultural and spiritual significance of Shravan, encouraging participants to cycle for fitness while connecting with the month's traditions.
+            The Shravan Cycling Challenge is a fitness and spiritual event focused on cycling during the auspicious month of Shravan, often associated with Lord Shiva and religious observances. It combines physical activity with the cultural and spiritual significance of Shravan, encouraging participants to cycle for fitness while connecting with the month&apos;s traditions.
           </p>
         </div>
 
@@ -311,7 +311,7 @@ function Dashboard() {
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-accent-blue mt-1">•</span>
-                <span className="text-gray-300">While saving the ride on Strava, mention "SCC- SHRAVAN CHALLENGE DAY -1".</span>
+                <span className="text-gray-300">While saving the ride on Strava, mention &quot;SCC- SHRAVAN CHALLENGE DAY -1&quot;.</span>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-accent-blue mt-1">•</span>
@@ -331,7 +331,7 @@ function Dashboard() {
               <span>🚴‍♂️</span>
               Register Now!
             </Link>
-            <p className="text-gray-400">Ready to join the challenge? Let's ride together!</p>
+            <p className="text-gray-400">Ready to join the challenge? Let&apos;s ride together!</p>
           </div>
 
           {/* Community & Support */}

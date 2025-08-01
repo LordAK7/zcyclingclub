@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation' // Not used currently
 import Link from 'next/link'
 import { isAdmin } from '@/lib/admin'
 
@@ -24,7 +24,7 @@ interface ExistingRegistration {
 
 export default function Register() {
   const { user } = useAuth()
-  const router = useRouter()
+  // const router = useRouter() // Not used currently
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -158,7 +158,7 @@ export default function Register() {
 
     try {
       // Validate required fields based on payment tier
-      let requiredFields = ['fullName', 'mobileNumber', 'emailAddress', 'fullAddress', 'gender', 'stravaProfileLink', 'whereHeard', 'paymentTier']
+      const requiredFields = ['fullName', 'mobileNumber', 'emailAddress', 'fullAddress', 'gender', 'stravaProfileLink', 'whereHeard', 'paymentTier']
       
       if (formData.paymentTier === 'plus' || formData.paymentTier === 'premium') {
         requiredFields.push('deliveryAddress')
@@ -191,7 +191,7 @@ export default function Register() {
       }
 
       // Submit registration data using dedicated function
-      const { data: registrationId, error: insertError } = await supabase.rpc('submit_user_registration', {
+      const { error: insertError } = await supabase.rpc('submit_user_registration', {
         p_full_name: formData.fullName,
         p_mobile_number: formData.mobileNumber,
         p_email_address: '', // Email will be fetched from auth.users in the function
@@ -261,13 +261,13 @@ export default function Register() {
       }
     }
 
-    const getStatusBg = (status: string) => {
-      switch (status) {
-        case 'approved': return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-        case 'rejected': return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-        default: return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-      }
-    }
+    // const getStatusBg = (status: string) => { // Commented out as not used
+    //   switch (status) {
+    //     case 'approved': return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+    //     case 'rejected': return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+    //     default: return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+    //   }
+    // }
 
     return (
       <div className="min-h-screen bg-black">
@@ -418,7 +418,7 @@ export default function Register() {
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed">
               Thank you for joining the <span className="text-accent-blue">Shravan Virtual Cycling Challenge</span>. 
-              We'll review your submission and get back to you soon.
+              We&apos;ll review your submission and get back to you soon.
             </p>
           </div>
           <div className="space-y-4">
@@ -725,11 +725,11 @@ export default function Register() {
                     className="form-field w-full"
                   >
                     <option value="">Select Size</option>
-                    <option value="S">S (36")</option>
-                    <option value="M">M (38")</option>
-                    <option value="L">L (40")</option>
-                    <option value="XL">XL (42")</option>
-                    <option value="XXL">XXL (44")</option>
+                    <option value="S">S (36&quot;)</option>
+                    <option value="M">M (38&quot;)</option>
+                    <option value="L">L (40&quot;)</option>
+                    <option value="XL">XL (42&quot;)</option>
+                    <option value="XXL">XXL (44&quot;)</option>
                   </select>
                   <p className="text-sm text-gray-400 mt-2">
                     👕 Premium dry-fit t-shirt included in your package

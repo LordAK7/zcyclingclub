@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation' // Not used currently
 import Link from 'next/link'
 
 export default function SignUp() {
@@ -12,7 +12,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-  const router = useRouter()
+  // const router = useRouter() // Commented out as not used
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
