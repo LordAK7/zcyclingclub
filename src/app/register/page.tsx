@@ -104,10 +104,19 @@ export default function Register() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validate file size
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
         setError('File size must be less than 10MB')
         return
       }
+      
+      // Validate file type - only allow images
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        setError('Please upload an image file (JPEG, PNG, GIF, or WebP)')
+        return
+      }
+      
       setPaymentFile(file)
       setError('')
     }
@@ -185,7 +194,7 @@ export default function Register() {
       const { data: registrationId, error: insertError } = await supabase.rpc('submit_user_registration', {
         p_full_name: formData.fullName,
         p_mobile_number: formData.mobileNumber,
-        p_email_address: formData.emailAddress,
+        p_email_address: '', // Email will be fetched from auth.users in the function
         p_full_address: formData.fullAddress,
         p_gender: formData.gender,
         p_strava_profile_link: formData.stravaProfileLink,
@@ -608,21 +617,26 @@ export default function Register() {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="emailAddress" className="block text-sm font-semibold text-white mb-3">
-                Email Address *
-              </label>
-              <input
-                type="email"
-                id="emailAddress"
-                name="emailAddress"
-                required
-                value={formData.emailAddress}
-                onChange={handleInputChange}
-                className="form-field w-full"
-                placeholder="Enter your email address"
-              />
-            </div>
+                          <div>
+                <label htmlFor="emailAddress" className="block text-sm font-semibold text-white mb-3">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  id="emailAddress"
+                  name="emailAddress"
+                  required
+                  value={formData.emailAddress}
+                  onChange={handleInputChange}
+                  className="form-field w-full bg-gray-700 text-gray-400 cursor-not-allowed"
+                  placeholder="Enter your email address"
+                  disabled={true}
+                  title="Email is automatically set from your account"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Email is locked and automatically set from your authenticated account
+                </p>
+              </div>
           </div>
 
           {/* Address Information Section */}
@@ -791,14 +805,14 @@ export default function Register() {
               <input
                 type="file"
                 id="paymentFile"
-                accept="image/*,.pdf"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                 required
                 onChange={handleFileChange}
                 className="form-field w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:text-white hover:file:bg-gray-600 transition-all"
               />
               <div className="text-sm text-gray-400 space-y-1">
                 <p>• Upload payment screenshot after completing payment</p>
-                <p>• Supported formats: JPG, PNG, PDF</p>
+                <p>• Supported formats: JPEG, PNG, GIF, WebP only</p>
                 <p>• Maximum file size: 10 MB</p>
               </div>
               {paymentFile && (
