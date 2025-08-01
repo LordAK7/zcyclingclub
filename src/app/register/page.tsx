@@ -533,7 +533,6 @@ export default function Register() {
                     <ul className="text-xs text-gray-500 mt-3 space-y-1">
                       <li>• E-Certificate</li>
                       <li>• Physical Medal</li>
-                      <li>• Home delivery</li>
                     </ul>
                   </div>
                 </div>
@@ -562,7 +561,6 @@ export default function Register() {
                       <li>• E-Certificate</li>
                       <li>• Physical Medal</li>
                       <li>• Dry Fit T-Shirt</li>
-                      <li>• Home delivery</li>
                     </ul>
                   </div>
                 </div>

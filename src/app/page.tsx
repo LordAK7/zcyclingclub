@@ -262,9 +262,8 @@ function Dashboard() {
                 <p className="text-2xl font-bold text-accent-orange">₹399</p>
                 <p className="text-sm text-gray-400">Registration + Medal</p>
                 <ul className="text-xs text-gray-500 mt-2 space-y-1">
-                  <li>• E-Certificate</li>
-                  <li>• Physical Medal</li>
-                  <li>• Home delivery</li>
+                                        <li>• E-Certificate</li>
+                      <li>• Physical Medal</li>
                 </ul>
               </div>
               <div className="relative text-center p-4 rounded-lg bg-elevated hover:bg-gray-800 transition-colors border-2 border-accent-blue">
@@ -273,10 +272,9 @@ function Dashboard() {
                 <p className="text-2xl font-bold text-accent-blue">₹799</p>
                 <p className="text-sm text-gray-400">Complete Package</p>
                 <ul className="text-xs text-gray-500 mt-2 space-y-1">
-                  <li>• E-Certificate</li>
-                  <li>• Physical Medal</li>
-                  <li>• Dry Fit T-Shirt</li>
-                  <li>• Home delivery</li>
+                                        <li>• E-Certificate</li>
+                      <li>• Physical Medal</li>
+                      <li>• Dry Fit T-Shirt</li>
                 </ul>
               </div>
             </div>
