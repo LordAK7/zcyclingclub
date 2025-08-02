@@ -6,9 +6,19 @@ import { isAdmin } from '@/lib/admin'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
+import { config } from '@/lib/config'
 
 function PaymentDetails() {
   const [showQR, setShowQR] = useState(false)
+
+  const downloadQR = () => {
+    const link = document.createElement('a')
+    link.href = '/qr.jpg'
+    link.download = 'SCC-Payment-QR.jpg'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   return (
     <div className="text-center pt-6 border-t border-gray-700">
@@ -20,7 +30,7 @@ function PaymentDetails() {
         
         <div className="space-y-3">
           <div className="inline-block px-6 py-3 rounded-lg font-mono text-lg bg-elevated text-accent-blue">
-            8999169699@ybl
+            {config.upiId}
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -30,6 +40,13 @@ function PaymentDetails() {
             >
               <span>📱</span>
               {showQR ? 'Hide QR Code' : 'Show QR Code'}
+            </button>
+            <button
+              onClick={downloadQR}
+              className="btn btn-secondary inline-flex items-center gap-2"
+            >
+              <span>⬇️</span>
+              Download QR
             </button>
             <p className="text-gray-400 text-sm">or scan QR to pay instantly</p>
           </div>
@@ -87,47 +104,141 @@ function LoadingSpinner() {
 
 function SignInPrompt() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary">
-      <div className="text-center space-y-10 px-6 max-w-2xl">
-        <div className="space-y-4">
-          <h1 className="text-6xl font-bold text-white leading-tight">
-            Someshwar Cycling Club
-          </h1>
-          <p className="text-xl text-gray-300 font-medium max-w-md mx-auto">
-            Join cyclists from across the country in the ultimate virtual challenge
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Link 
-            href="/auth/signin"
-            className="btn btn-primary min-w-[140px]"
-          >
-            Sign In
-          </Link>
-          <Link 
-            href="/auth/signup"
-            className="btn btn-secondary min-w-[140px]"
-          >
-            Sign Up
-          </Link>
-        </div>
-        <div className="pt-8 text-sm text-gray-400">
-          <p>Ready to pedal towards fitness and community?</p>
+    <div className="min-h-screen bg-primary">
+      {/* Header */}
+      <div className="text-center space-y-6 py-12 px-6">
+        <h1 className="text-5xl font-bold text-white leading-tight">
+          Shravan Virtual<br/>
+          <span className="text-accent-blue">Cycling Challenge</span>
+        </h1>
+        <p className="text-xl text-gray-300 font-medium max-w-2xl mx-auto">
+          Presented by Someshwar Cycling Club, Baramati, Pune
+        </p>
+      </div>
+
+      {/* Registration Notification */}
+      <div className="bg-accent-blue/10 border-l-4 border-accent-blue py-4 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center gap-3 text-center">
+            <span className="text-2xl">🔥</span>
+            <p className="text-white font-semibold">
+              <span className="text-accent-blue">110+ cyclists</span> have already registered!
+            </p>
+            <span className="text-accent-orange font-bold">
+              Registration ends on {config.registrationDeadline}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto p-6 space-y-10">
+        <div className="card">
+          <h2 className="text-3xl font-bold text-white mb-6">
+            Welcome to the Challenge! 🚴‍♂️
+          </h2>
+          <p className="text-gray-300 text-lg leading-relaxed">
+            Join cyclists from across the country this Shravan month and ride towards fitness and fun.
+            The Shravan Cycling Challenge is a fitness and spiritual event focused on cycling during the auspicious month of Shravan, often associated with Lord Shiva and religious observances. It combines physical activity with the cultural and spiritual significance of Shravan, encouraging participants to cycle for fitness while connecting with the month&apos;s traditions.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="card">
+            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-orange">📅</span>
+              Challenge Details
+            </h3>
+            <div className="space-y-4 text-gray-300">
+              <div className="flex items-start gap-3">
+                <span className="font-semibold text-accent-orange min-w-[140px]">Registration Deadline:</span>
+                <span className="text-white font-semibold">{config.registrationDeadline}</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="font-semibold text-white min-w-[140px]">Challenge Dates:</span>
+                <span>15/8/2025 to 4/9/2025</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="font-semibold text-white min-w-[140px]">Challenge:</span>
+                <span>Ride 525 km in 21 Days</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="font-semibold text-white min-w-[140px]">Rewards:</span>
+                <span>Complete the rides and earn a medal, certificate, and Dry fit T shirt. Special trophies for the top male and female riders.</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-green">📋</span>
+              Registration Info
+            </h3>
+            <div className="space-y-4 text-gray-300">
+              <div className="flex items-start gap-3">
+                <span className="font-semibold text-white min-w-[120px]">Start Date:</span>
+                <span>1/8/2025</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="font-semibold text-white min-w-[120px]">End Date:</span>
+                <span>{config.registrationEndDate}</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="font-semibold text-white min-w-[120px]">Certificate:</span>
+                <span>All participating riders will receive an E Certificate</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sign In Section */}
+        <div className="card text-center space-y-8">
+          <div className="space-y-4">
+            <h3 className="text-2xl font-bold text-white">
+              Ready to Join the Challenge?
+            </h3>
+            <p className="text-lg text-gray-300">
+              Sign in to learn more about registration packages and get started!
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link 
+              href="/auth/signin"
+              className="btn btn-primary min-w-[140px]"
+            >
+              Sign In
+            </Link>
+            <Link 
+              href="/auth/signup"
+              className="btn btn-secondary min-w-[140px]"
+            >
+              Sign Up
+            </Link>
+          </div>
+          
+          <div className="pt-4 text-sm text-gray-400">
+            <p>Ready to pedal towards fitness and community?</p>
+          </div>
+        </div>
+      </main>
     </div>
   )
 }
 
 function Dashboard() {
   const { user, signOut } = useAuth()
-  const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null)
+  const [userProfile, setUserProfile] = useState<{ 
+    full_name?: string 
+    registration_status?: 'pending' | 'approved' | 'rejected'
+    created_at?: string
+  } | null>(null)
 
   const handleSignOut = async () => {
     await signOut()
   }
 
-  // Get user's profile name if they have registered
+  // Get user's profile and registration status
   useEffect(() => {
     const getUserProfile = async () => {
       if (!user) return
@@ -144,6 +255,14 @@ function Dashboard() {
 
     getUserProfile()
   }, [user])
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'text-accent-green bg-green-900/20'
+      case 'rejected': return 'text-accent-orange bg-red-900/20'
+      default: return 'text-yellow-400 bg-yellow-900/20'
+    }
+  }
 
   return (
     <div className="min-h-screen bg-primary">
@@ -174,6 +293,21 @@ function Dashboard() {
           </div>
         </div>
       </header>
+
+      {/* Registration Notification */}
+      <div className="bg-accent-blue/10 border-l-4 border-accent-blue py-4 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center gap-3 text-center">
+            <span className="text-2xl">🔥</span>
+            <p className="text-white font-semibold">
+              <span className="text-accent-blue">110+ cyclists</span> have already registered!
+            </p>
+            <span className="text-accent-orange font-bold">
+              Registration ends on {config.registrationDeadline}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto p-6 space-y-10">
@@ -206,7 +340,7 @@ function Dashboard() {
             <div className="space-y-4 text-gray-300">
               <div className="flex items-start gap-3">
                 <span className="font-semibold text-accent-orange min-w-[140px]">Registration Deadline:</span>
-                <span className="text-white font-semibold">14th August 2025</span>
+                <span className="text-white font-semibold">{config.registrationDeadline}</span>
               </div>
               <div className="flex items-start gap-3">
                 <span className="font-semibold text-white min-w-[140px]">Challenge Dates:</span>
@@ -229,13 +363,28 @@ function Dashboard() {
               Registration Info
             </h3>
             <div className="space-y-4 text-gray-300">
+              {userProfile ? (
+                <>
+                  <div className="flex items-start gap-3">
+                    <span className="font-semibold text-white min-w-[120px]">Your Status:</span>
+                    <span className={`px-3 py-1 text-sm font-medium capitalize rounded-lg ${getStatusColor(userProfile.registration_status || 'pending')}`}>
+                      {userProfile.registration_status || 'pending'}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="font-semibold text-white min-w-[120px]">Registered:</span>
+                    <span>{userProfile.created_at ? new Date(userProfile.created_at).toLocaleDateString('en-IN') : 'N/A'}</span>
+                  </div>
+                  <hr className="border-gray-700 my-4" />
+                </>
+              ) : null}
               <div className="flex items-start gap-3">
                 <span className="font-semibold text-white min-w-[120px]">Start Date:</span>
                 <span>1/8/2025</span>
               </div>
               <div className="flex items-start gap-3">
                 <span className="font-semibold text-white min-w-[120px]">End Date:</span>
-                <span>20/8/2025</span>
+                <span>{config.registrationEndDate}</span>
               </div>
               <div className="flex items-start gap-3">
                 <span className="font-semibold text-white min-w-[120px]">Certificate:</span>
@@ -328,12 +477,16 @@ function Dashboard() {
           <div className="space-y-6">
             <Link 
               href="/register"
-              className="btn btn-accent text-xl px-12 py-4 inline-flex items-center gap-3"
+              className={`btn text-xl px-12 py-4 inline-flex items-center gap-3 ${
+                userProfile ? 'btn-secondary' : 'btn-accent'
+              }`}
             >
-              <span>🚴‍♂️</span>
-              Register Now!
+              <span>{userProfile ? '📋' : '🚴‍♂️'}</span>
+              {userProfile ? 'Registered - Click to View Info' : 'Register Now!'}
             </Link>
-            <p className="text-gray-400">Ready to join the challenge? Let&apos;s ride together!</p>
+            <p className="text-gray-400">
+              {userProfile ? 'View your registration details and status' : "Ready to join the challenge? Let's ride together!"}
+            </p>
           </div>
 
           {/* Community & Support */}

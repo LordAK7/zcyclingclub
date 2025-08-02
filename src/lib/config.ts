@@ -26,6 +26,7 @@ export const config = {
   
   // Important Dates
   registrationDeadline: '14th August 2025',
+  registrationEndDate: '14/8/2025', // For display in registration info
   challengeStartDate: '15th August 2025',
   challengeEndDate: '4th September 2025',
 } as const

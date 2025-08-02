@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin'
+import { config } from '@/lib/config'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -34,6 +35,9 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set())
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [paymentTierFilter, setPaymentTierFilter] = useState<string>('all')
 
   // Check if user is admin and redirect if not
   useEffect(() => {
@@ -55,7 +59,15 @@ export default function AdminPanel() {
           console.error('Error fetching registrations:', error)
           setError(`Failed to load registrations: ${error.message || JSON.stringify(error)}`)
         } else {
-          setRegistrations(data || [])
+          const registrationData = data || []
+          setRegistrations(registrationData)
+          
+          // Debug logging to understand the data structure
+          if (process.env.NODE_ENV === 'development' && registrationData.length > 0) {
+            console.log('Sample registration data:', registrationData[0])
+            console.log('Payment tiers found:', [...new Set(registrationData.map(r => r.payment_tier))])
+            console.log('Registration statuses found:', [...new Set(registrationData.map(r => r.registration_status))])
+          }
         }
       } catch (error) {
         console.error('Error fetching registrations:', error)
@@ -117,6 +129,89 @@ export default function AdminPanel() {
     return registrations.filter(reg => reg.registration_status === status).length
   }
 
+  const getTotalRevenue = () => {
+    return registrations
+      .filter(reg => reg.registration_status === 'approved')
+      .reduce((total, reg) => {
+        const amount = reg.payment_tier === 'basic' ? config.pricing.basic.amount : 
+                     reg.payment_tier === 'plus' ? config.pricing.plus.amount : 
+                     config.pricing.premium.amount
+        return total + amount
+      }, 0)
+  }
+
+  const getRevenueByTier = (tier: string) => {
+    const count = registrations.filter(reg => 
+      reg.payment_tier === tier && reg.registration_status === 'approved'
+    ).length
+    const amount = tier === 'basic' ? config.pricing.basic.amount : 
+                  tier === 'plus' ? config.pricing.plus.amount : 
+                  config.pricing.premium.amount
+    return count * amount
+  }
+
+  const getTierDistribution = () => {
+    const basic = registrations.filter(reg => 
+      reg.payment_tier === 'basic' && reg.registration_status === 'approved'
+    ).length
+    const plus = registrations.filter(reg => 
+      reg.payment_tier === 'plus' && reg.registration_status === 'approved'
+    ).length  
+    const premium = registrations.filter(reg => 
+      reg.payment_tier === 'premium' && reg.registration_status === 'approved'
+    ).length
+    return { basic, plus, premium }
+  }
+
+  const filteredRegistrations = registrations.filter(reg => {
+    const matchesSearch = !searchTerm || 
+      reg.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reg.email_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reg.mobile_number.includes(searchTerm)
+    
+    const matchesStatus = statusFilter === 'all' || reg.registration_status === statusFilter
+    const matchesTier = paymentTierFilter === 'all' || reg.payment_tier === paymentTierFilter
+    
+    return matchesSearch && matchesStatus && matchesTier
+  })
+
+  const exportToCSV = () => {
+    const headers = [
+      'Name', 'Email', 'Mobile', 'Gender', 'Address', 'Delivery Address', 
+      'Payment Tier', 'T-shirt Size', 'Strava Profile', 'Where Heard', 
+      'Status', 'Created At'
+    ]
+    
+    const csvData = filteredRegistrations.map(reg => [
+      reg.full_name,
+      reg.email_address,
+      reg.mobile_number,
+      reg.gender,
+      reg.full_address,
+      reg.delivery_address || '',
+      reg.payment_tier,
+      reg.tshirt_size || '',
+      reg.strava_profile_link,
+      reg.where_heard,
+      reg.registration_status,
+      new Date(reg.created_at).toLocaleDateString('en-IN')
+    ])
+    
+    const csv = [headers, ...csvData].map(row => 
+      row.map(field => `"${field}"`).join(',')
+    ).join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  }
+
   if (authLoading || !user || !isAdmin(user.email)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary">
@@ -152,9 +247,10 @@ export default function AdminPanel() {
         </div>
       </header>
 
-      {/* Stats */}
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+      {/* Enhanced Analytics Dashboard */}
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Primary Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="card text-center">
             <div className="text-3xl font-bold text-white mb-2">{registrations.length}</div>
             <div className="text-sm text-gray-400 font-medium">Total Registrations</div>
@@ -170,6 +266,162 @@ export default function AdminPanel() {
           <div className="card text-center">
             <div className="text-3xl font-bold text-accent-orange mb-2">{getStatsCount('rejected')}</div>
             <div className="text-sm text-gray-400 font-medium">Rejected</div>
+          </div>
+        </div>
+
+        {/* Revenue Analytics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="card">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <span className="text-accent-green">💰</span>
+              Revenue Analytics
+            </h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Total Revenue (Approved)</span>
+                <span className="text-2xl font-bold text-accent-green">₹{getTotalRevenue().toLocaleString('en-IN')}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-700">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-white">₹{getRevenueByTier('basic').toLocaleString('en-IN')}</div>
+                  <div className="text-xs text-gray-400">Basic</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-white">₹{getRevenueByTier('plus').toLocaleString('en-IN')}</div>
+                  <div className="text-xs text-gray-400">Plus</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-white">₹{getRevenueByTier('premium').toLocaleString('en-IN')}</div>
+                  <div className="text-xs text-gray-400">Premium</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <span className="text-accent-blue">📊</span>
+              Package Distribution (Approved)
+            </h3>
+            <div className="space-y-3">
+              {(() => {
+                const { basic, plus, premium } = getTierDistribution()
+                const total = basic + plus + premium
+                return (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Basic ({config.pricing.basic.display})</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-semibold">{basic}</span>
+                        <span className="text-xs text-gray-500">({total > 0 ? Math.round((basic/total)*100) : 0}%)</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Plus ({config.pricing.plus.display})</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-semibold">{plus}</span>
+                        <span className="text-xs text-gray-500">({total > 0 ? Math.round((plus/total)*100) : 0}%)</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Premium ({config.pricing.premium.display})</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-semibold">{premium}</span>
+                        <span className="text-xs text-gray-500">({total > 0 ? Math.round((premium/total)*100) : 0}%)</span>
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+          </div>
+        </div>
+
+        {/* Filters and Search */}
+        <div className="card mb-8">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <span className="text-accent-orange">🔍</span>
+              Registration Management
+            </h3>
+            <button
+              onClick={exportToCSV}
+              className="btn btn-secondary inline-flex items-center gap-2"
+            >
+              <span>📥</span>
+              Export CSV
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-400">Search</label>
+              <input
+                type="text"
+                placeholder="Search by name, email, or mobile..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="form-field w-full"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-400">Status Filter</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="form-field w-full"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-400">Package Filter</label>
+              <select
+                value={paymentTierFilter}
+                onChange={(e) => setPaymentTierFilter(e.target.value)}
+                className="form-field w-full"
+              >
+                <option value="all">All Packages</option>
+                <option value="basic">Basic ({config.pricing.basic.display})</option>
+                <option value="plus">Plus ({config.pricing.plus.display})</option>
+                <option value="premium">Premium ({config.pricing.premium.display})</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="mt-4 flex justify-between items-center">
+            <div className="text-sm text-gray-400">
+              Showing {filteredRegistrations.length} of {registrations.length} registrations
+            </div>
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                onClick={() => {
+                  console.log('Current registrations data:', registrations)
+                  console.log('Filtered registrations:', filteredRegistrations)
+                  console.log('Current filters:', { searchTerm, statusFilter, paymentTierFilter })
+                  console.log('Revenue calculation debug:', {
+                    totalRevenue: getTotalRevenue(),
+                    basicRevenue: getRevenueByTier('basic'),
+                    plusRevenue: getRevenueByTier('plus'),  
+                    premiumRevenue: getRevenueByTier('premium'),
+                    tierDistributionApproved: getTierDistribution(),
+                    allRegistrationsByTier: {
+                      basic: registrations.filter(r => r.payment_tier === 'basic').length,
+                      plus: registrations.filter(r => r.payment_tier === 'plus').length,
+                      premium: registrations.filter(r => r.payment_tier === 'premium').length
+                    }
+                  })
+                }}
+                className="btn btn-secondary text-xs"
+              >
+                Debug Data
+              </button>
+            )}
           </div>
         </div>
 
@@ -190,9 +442,15 @@ export default function AdminPanel() {
             <h3 className="text-xl font-bold text-white mb-2">No Registrations Yet</h3>
             <p className="text-gray-400">Registration data will appear here once users start signing up.</p>
           </div>
+        ) : filteredRegistrations.length === 0 ? (
+          <div className="card text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-bold text-white mb-2">No Matching Registrations</h3>
+            <p className="text-gray-400">Try adjusting your search or filter criteria.</p>
+          </div>
         ) : (
           <div className="space-y-6">
-            {registrations.map((registration) => (
+            {filteredRegistrations.map((registration) => (
               <div 
                 key={registration.id} 
                 className="card"
@@ -219,9 +477,9 @@ export default function AdminPanel() {
                           'bg-blue-600 text-white'
                         }`}>
                           {registration.payment_tier} - {
-                            registration.payment_tier === 'basic' ? '₹199' :
-                            registration.payment_tier === 'plus' ? '₹399' :
-                            '₹799'
+                            registration.payment_tier === 'basic' ? config.pricing.basic.display :
+                            registration.payment_tier === 'plus' ? config.pricing.plus.display :
+                            config.pricing.premium.display
                           }
                         </span>
                       )}
