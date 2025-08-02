@@ -59,14 +59,14 @@ export default function AdminPanel() {
           console.error('Error fetching registrations:', error)
           setError(`Failed to load registrations: ${error.message || JSON.stringify(error)}`)
         } else {
-          const registrationData = data || []
+          const registrationData = (data || []) as Registration[]
           setRegistrations(registrationData)
           
           // Debug logging to understand the data structure
           if (process.env.NODE_ENV === 'development' && registrationData.length > 0) {
             console.log('Sample registration data:', registrationData[0])
-            console.log('Payment tiers found:', [...new Set(registrationData.map(r => r.payment_tier))])
-            console.log('Registration statuses found:', [...new Set(registrationData.map(r => r.registration_status))])
+            console.log('Payment tiers found:', [...new Set(registrationData.map((r: Registration) => r.payment_tier))])
+            console.log('Registration statuses found:', [...new Set(registrationData.map((r: Registration) => r.registration_status))])
           }
         }
       } catch (error) {
@@ -411,9 +411,9 @@ export default function AdminPanel() {
                     premiumRevenue: getRevenueByTier('premium'),
                     tierDistributionApproved: getTierDistribution(),
                     allRegistrationsByTier: {
-                      basic: registrations.filter(r => r.payment_tier === 'basic').length,
-                      plus: registrations.filter(r => r.payment_tier === 'plus').length,
-                      premium: registrations.filter(r => r.payment_tier === 'premium').length
+                      basic: registrations.filter((r: Registration) => r.payment_tier === 'basic').length,
+                      plus: registrations.filter((r: Registration) => r.payment_tier === 'plus').length,
+                      premium: registrations.filter((r: Registration) => r.payment_tier === 'premium').length
                     }
                   })
                 }}
